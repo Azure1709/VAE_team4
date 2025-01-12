@@ -1,0 +1,75 @@
+% CVPR 2025 Paper Template; see https://github.com/cvpr-org/author-kit
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage[T5]{fontenc} % Encoding for Vietnamese
+\usepackage[utf8]{inputenc} % Allow UTF-8 input
+\usepackage[vietnam]{babel} % Vietnamese language support
+\usepackage{float}
+\usepackage{amsmath}        % Hỗ trợ toán học
+\usepackage{amssymb}        % Ký hiệu toán học
+\usepackage{amsfonts}       % Font chữ toán học
+\usepackage{mdframed}       % Tạo khung
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+% \usepackage{cvpr}              % To produce the CAMERA-READY version
+\usepackage{cvpr}      % To produce the REVIEW version
+% \usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Import additional packages in the preamble file, before hyperref
+\input{preamble}
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, 
+% e.g. with the file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete *.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you should be clear).
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\paperID{*****} % *** Enter the Paper ID here
+\def\confName{CS115}
+\def\confYear{2024}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Variational Autoencoder (VAE)}
+
+%%%%%%%%% AUTHORS - PLEASE UPDATE
+\author{
+    Thanh Bui Ngoc Thien \\
+    University of Information Technology - VNU \\
+    {\tt\small 23521436@gm.uit.edu.vn}
+    \and
+    Nam Nguyen Pham Phuong \\
+    University of Information Technology - VNU \\
+    {\tt\small 23520978@gm.uit.edu.vn}
+    \and
+    Cuong Dang Quoc \\
+    University of Information Technology - VNU \\
+    {\tt\small 23520192@gm.uit.edu.vn}
+}
+
+
+\begin{document}
+\maketitle
+\input{sec/0_abstract}    
+\input{sec/1_intro}
+\input{sec/2_basmath.tex}
+\input{sec/3_buildEn&De}
+\input{sec/4_evidence}
+\input{sec/5_optimal}
+\input{sec/6_specific}
+\input{sec/7_application}
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{main}
+}
+
+% WARNING: do not forget to delete the supplementary pages from your submission 
+% \input{sec/X_suppl}
+
+\end{document}
