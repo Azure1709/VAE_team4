@@ -1,0 +1,125 @@
+\section{Optimization in VAE}
+
+\subsection{Objective Function}
+The optimization objective of the VAE is to maximize the Evidence Lower Bound (ELBO):
+\begin{equation}
+(\phi, \theta) = \arg\max_{\phi, \theta} \sum_{x \in \mathcal{X}} \text{ELBO}(x),
+\end{equation}
+where \(\mathcal{X} = \{x^{(\ell)} \mid \ell = 1, \dots, L\}\) is the training dataset.
+
+The main challenge in optimizing the VAE lies in the intractability of the ELBO gradient with respect to \((\phi, \theta)\). Since modern neural network optimizers rely on first-order methods like gradient descent and backpropagation, this intractability makes training difficult.
+
+\subsection{Gradient Computation for ELBO}
+The gradient of the ELBO can be expressed as:
+\begin{align}
+\nabla_{\theta, \phi} \text{ELBO}(x) &= \nabla_{\theta, \phi} 
+\mathbb{E}_{q_\phi(z|x)} 
+\left[
+\log \frac{p_\theta(x, z)}{q_\phi(z|x)}
+\right] \nonumber \\
+&= \nabla_{\theta, \phi} 
+\mathbb{E}_{q_\phi(z|x)} 
+\left[
+\log p_\theta(x, z) - \log q_\phi(z|x)
+\right].
+\end{align}
+
+---
+
+\subsubsection*{Gradient with Respect to \(\theta\)}
+The gradient with respect to \(\theta\) can be derived as:
+\begin{align}
+\nabla_\theta \text{ELBO}(x) &= \mathbb{E}_{q_\phi(z|x)}
+\left[
+\nabla_\theta \log p_\theta(x, z)
+\right].
+\end{align}
+
+Using Monte Carlo approximation, we obtain:
+\begin{equation}
+\nabla_\theta \text{ELBO}(x) \approx 
+\frac{1}{L} \sum_{\ell=1}^L 
+\nabla_\theta \log p_\theta(x, z^{(\ell)}),
+\end{equation}
+where \(z^{(\ell)} \sim q_\phi(z|x)\).
+
+---
+
+\subsubsection*{Gradient with Respect to \(\phi\)}
+The gradient with respect to \(\phi\) is more challenging:
+\begin{align}
+\nabla_\phi \text{ELBO}(x) &= \mathbb{E}_{q_\phi(z|x)} 
+\left[
+\nabla_\phi \log p_\theta(x, z) - \nabla_\phi \log q_\phi(z|x)
+\right].
+\end{align}
+
+Using Monte Carlo approximation for the second term:
+\begin{equation}
+\nabla_\phi \text{ELBO}(x) \approx \frac{1}{L} \sum_{\ell=1}^L 
+\nabla_\phi 
+\left(
+- \log q_\phi(z^{(\ell)}|x)
+\right),
+\end{equation}
+where \(z^{(\ell)} \sim q_\phi(z|x)\).
+
+---
+
+\subsection{Reparameterization Trick}
+To simplify gradient computation, the \textbf{Reparameterization Trick} is introduced. Recall that the latent variable \(z\) is a sample drawn from \(q_\phi(z|x)\). The reparameterization trick expresses \(z\) as a differentiable and invertible transformation of another random variable \(\epsilon\), independent of \(x\) and \(\phi\).
+
+Suppose:
+\begin{equation}
+z \sim q_\phi(z|x) = \mathcal{N}(z \mid \mu, \text{diag}(\sigma^2)),
+\end{equation}
+we define:
+\begin{equation}
+z = g(\epsilon, \phi, x) = \epsilon \odot \sigma + \mu, \quad \epsilon \sim \mathcal{N}(0, I),
+\end{equation}
+where \(\odot\) denotes elementwise multiplication, and \(\phi = (\mu, \sigma^2)\).
+
+---
+
+\subsubsection*{Jacobian Simplification}
+$\frac{\partial z}{\partial \epsilon}$ is the Jacobian, we can define that:
+\[
+\frac{\partial z}{\partial \epsilon} =
+\begin{bmatrix}
+\frac{\partial z_1}{\partial \epsilon_1} & \frac{\partial z_1}{\partial \epsilon_2} & \cdots & \frac{\partial z_1}{\partial \epsilon_d} \\
+\frac{\partial z_2}{\partial \epsilon_1} & \frac{\partial z_2}{\partial \epsilon_2} & \cdots & \frac{\partial z_2}{\partial \epsilon_d} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial z_d}{\partial \epsilon_1} & \frac{\partial z_d}{\partial \epsilon_2} & \cdots & \frac{\partial z_d}{\partial \epsilon_d}
+\end{bmatrix}.
+\]
+The expression for each component $i$ is:
+\[
+z_i = \sigma_i \epsilon_i + \mu_i
+\]
+
+---
+
+\subsection{Gradient Computation with Reparameterization}
+Using the reparameterization trick, we aim to compute:
+\[
+\nabla_\phi \mathbb{E}_{q_\phi(z|x)}[f(z)] = \mathbb{E}_{p(\epsilon)}[\nabla_\phi f(z)],
+\]
+where \(f(z)\) is some function of \(z\) (e.g., \(f(z) = -\log q_\phi(z|x)\)).
+
+Substituting \(f(z) = -\log q_\phi(z|x)\), we obtain:
+\[
+\nabla_\phi \mathbb{E}_{q_\phi(z|x)}[-\log q_\phi(z|x)] \approx \frac{1}{L} \sum_{\ell=1}^L \nabla_\phi \log \det \left( \frac{\partial z^{(\ell)}}{\partial \epsilon^{(\ell)}} \right),
+\]
+where \(z^{(\ell)} = g(\epsilon^{(\ell)}, \phi, x)\).
+
+---
+
+\subsection{Monte Carlo Approximation}
+Using Monte Carlo ~\cite{james1980monte, kroese2014monte}, the expectation can be approximated as:
+\[
+\mathbb{E}_{q_\phi(z|x)}[f(z)] \approx \frac{1}{L} \sum_{\ell=1}^L f(z^{(\ell)}),
+\]
+where \(z^{(\ell)} = g(\epsilon^{(\ell)}, \phi, x)\) and \(\epsilon^{(\ell)} \sim \mathcal{N}(0, I)\).
+
+This reparameterization allows gradients to flow through \(\phi = (\mu, \sigma^2)\) efficiently.
+
